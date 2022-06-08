@@ -228,15 +228,17 @@ const onMeet = async (chatId) => {
                     {text: '11:00', callback_data: '11:00'}, 
                     {text: '12:00', callback_data: '12:00'}, 
                     {text: '13:00', callback_data: '13:00'}, 
-                    {text: '14:00', callback_data: '14:00'}, 
-                    {text: '15:00', callback_data: '15:00'}, 
                 ],
                 [
+                    {text: '14:00', callback_data: '14:00'}, 
+                    {text: '15:00', callback_data: '15:00'}, 
                     {text: '16:00', callback_data: '16:00'},
                     {text: '17:00', callback_data: '17:00'}, 
                     {text: '18:00', callback_data: '18:00'}, 
-                    {text: '19:00', callback_data: '19:00'}, 
                 ],
+                [
+                    {text: '19:00', callback_data: '19:00'}, 
+                ]
             ]
         })
     }
@@ -294,10 +296,9 @@ const start = () => {
     const startOptions = {
         reply_markup: JSON.stringify({
             inline_keyboard: [
-                [{text: 'Сообщить о баге', callback_data: '/bug'}],
-                [{text: 'Сделать предложение', callback_data: '/upg'}],
-                [{text: 'Отправить отчет', callback_data: '/stat'}],
-                [{text: 'Назначить встречу', callback_data: '/meet'}],
+                [{text: 'YUIRWQ', callback_data: '/bug'}],
+                [{text: 'JASDJAS', callback_data: '/upg'}],
+                [{text: 'LKSDJA', callback_data: '/meet'}],
             ]
         })
     }
@@ -318,16 +319,7 @@ const start = () => {
             //     }
             // })
 
-            const startMessage = `В этого бота можно отправлять замеченные вами недоработки, предложения по улучшению функционала той платформы, с которой вы работаете, отправлять отчеты по эффективности рекламе, назначать встречи.
-            
-            Чтобы это сделать, вам для начала нужно выбрать нужный пункт в меню или нажать на кнопку с соотвествующим названием и отправить информацию в соотвествии с инструкцией в сообщении,появившемся после нажатия на кнопку.
-            
-            Либо же ввести одну из команд: 
-            /bug - в случае,если вы нашли недоработку. 
-            /upg - в случае,если вы хотите что-нибудь предложить.
-            /stat - в случае,если вы хотите отправить отчет по рекламе.
-            /meet - в случае,если вы хотите назначить встречу.
-                        `
+            const startMessage = `Привествие N2 `
             const form = new FormData()
             form.append('command_type', 'start')
             form.append('chat_id', chatId)
