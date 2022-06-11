@@ -2,7 +2,7 @@ import TelegramApi from 'node-telegram-bot-api'
 import axios from 'axios'
 import FormData from 'form-data'
 import http from 'http'
-const token = '5421644669:AAFMfTEPXDFbMuERhHu9YgJp3QgFFcKP1hA'
+const token = '5269030142:AAHIxx6SQx3Q5M2IvV2w6xwFIGW7vmvB7Dg'
 const bot = new TelegramApi(token, {polling: true})
 
 
