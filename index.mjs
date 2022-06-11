@@ -28,17 +28,6 @@ const server = http.createServer(requestListener)
 server.listen(5432, 'localhost')
 
 
-// RegularExp
-    // Stat RegularExp
-        const statRegularExp = /=((([А-Я]{1,10}[1,9]{1,3})((\*)[0-9]{1,10}){4})|(([А-Я]{1,10})(\*)[0-9]{1,10}))$/
-
-    // Meet RegularExp
-        const meetRegularExp = /((@((([A-z])|[0-9])+)) (([0-9]{1,2}\.){2})([0-9]{4}) ([0-9]{1,2}:[0-9]{1,2}$))/
-        const meetUsernameRegularExp = /(@((([A-z])|[0-9])+))/
-        const meetDateRegularExp = /(([0-9]{1,2}\.){2})([0-9]{4})/
-        const meetTimeRegularExp = /([0-9]{1,2}:[0-9]{1,2})$/
-
-
 const POST_FETCH_REQUEST = async (form) => {
     
     const URL = 'https://t.multibrand.msk.ru/tg_bot.php'
@@ -69,213 +58,600 @@ const POST_FETCH_REQUEST = async (form) => {
 
 
 
-const formatCheck = (text,Regexp) => text.match(Regexp) ? text.match(Regexp)[0] : null
+const onStart = async (chatId,first_name,username,message_id) => {
 
-const onBugs = async (chatId) => {
-    await bot.sendMessage(chatId, `Письмо об ошибке,должно быть описано в одном сообщении,включая прикрепленные файлы.
+    const startOptions = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Узнать стоимость', callback_data: '/price'}],
+                [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
+                [{text: 'Получить консультацию', callback_data: '/manager'}],
+            ]
+        })
+    }
 
-Опишите некорректную работу платформы,по возможности,прикрепите фото/видео-материалы и отправляйте сообщение.
+    // bot.sendMessage(chatId, 'Если вы покажите свой номер телефона боту,мы сможем подсказать вам статус вашего заказа', {
+    //     reply_markup: {
+    //         one_time_keyboard: true,
+    //         keyboard: [[{text: 'Показать боту свой номер', request_contact: true, one_time_keyboard: true}]]
+    //     }
+    // })
 
-Если вы все сделали верно, бот пришлет сообщение с соотвествующим контекстом.
-            `)
+    const startMessage = `${first_name}, доброго времени суток. Что вас интересует? `
+    const form = new FormData()
+    form.append('command_type', 'start')
+    form.append('chat_id', chatId)
+    form.append('username', username)
+    form.append('first_name', first_name)
 
-    return bot.once('message', async msg => {
-        const {first_name,username} = msg.from
-        let {text} = msg
+    await POST_FETCH_REQUEST(form)
+    const mes = await bot.sendMessage(chatId, startMessage ,startOptions)
+    
 
-        const form = new FormData()
-        form.append('command_type', 'bug')
-        form.append('chat_id', chatId)
-        form.append('user_text', text)
-        form.append('username', username)
-        form.append('first_name', first_name)
+    return bot.on('callback_query', async callback_query => {
+        const action = callback_query.data
 
-        await POST_FETCH_REQUEST(form)
-        return bot.sendMessage(chatId, `Спасибо за проявленную инициативность! В ближайшее время ошибка будет исправлена :)`)
-    })   
+        if(action === '/price') {
+            await bot.deleteMessage(chatId,mes.message_id)
+            return onBugs(chatId)
+        }
+        if(action === '/contacts') {
+            await bot.deleteMessage(chatId,mes.message_id)
+            return onUpgrade(chatId)
+        }
+        if(action === '/manager'){
+            await bot.deleteMessage(chatId,mes.message_id)
+            return onMeet(chatId)
+        }
+    })
+
 }
 
-const onUpgrade = async (chatId) => {
-    await bot.sendMessage(chatId, `Письмо об улучшении,должно быть описано в одном сообщении,включая прикрепленные файлы.
+const onBackToStart = async (chatId,first_name,username,message_id) => {
 
-Опишите свою идею,по возможности,прикрепите фото/видео-материалы, в качестве референсов и отправляйте сообщение.
+    const startOptions = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{text: 'Узнать стоимость', callback_data: '/price'}],
+                [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
+                [{text: 'Получить консультацию', callback_data: '/manager'}],
+            ]
+        })
+    }
 
-Если вы все сделали верно, бот пришлет сообщение с соотвествующим контекстом.
-            `)
+    // bot.sendMessage(chatId, 'Если вы покажите свой номер телефона боту,мы сможем подсказать вам статус вашего заказа', {
+    //     reply_markup: {
+    //         one_time_keyboard: true,
+    //         keyboard: [[{text: 'Показать боту свой номер', request_contact: true, one_time_keyboard: true}]]
+    //     }
+    // })
 
-   return bot.once('message', async msg => {
-        const {first_name,username} = msg.from
-        let {text} = msg
+    const startMessage = `Что вас интересует? `
+    const form = new FormData()
+    form.append('command_type', 'backtostart')
+    form.append('chat_id', chatId)
+    form.append('username', username)
+    form.append('first_name', first_name)
 
-        const form = new FormData()
-        form.append('command_type', 'upg')
-        form.append('chat_id', chatId)
-        form.append('user_text', text)
-        form.append('username', username)
-        form.append('first_name', first_name)
+    await POST_FETCH_REQUEST(form)
+    const mes = await bot.sendMessage(chatId, startMessage ,startOptions)
 
-        await POST_FETCH_REQUEST(form)
-        return bot.sendMessage(chatId, `Спасибо за проявленную инициативность! В ближайшее время мы рассмотрим ваше предложение :)`)
-    })   
-}
+    await bot.on('message', async msg => {
+        const chatId = msg.chat.id
+        const {username,first_name} = msg.chat
+        const {text,message_id} = msg
 
-const onStat = async (chatId) => {
-    await bot.sendMessage(chatId, `Чтобы успешно записать отчет вам обязательно нужно придерживаться заданного стандарта.
-На данный момент существует два варианта записи отчета: полный и быстрый.
 
-Полный выглядит так: =СПБ1*17000*7222*17*3
+        console.log(msg)
+        if(text === '/start'){
+            return onStart(chatId,first_name,username,message_id)
+        }
 
-Быстрый выглядит так: =СПБ*21873302
-    `)
+        if(text === '/price'){
+            bot.deleteMessage(chatId,message_id)
+            return onBugs(chatId)
+        }
 
-    return bot.once('message', async msg => {
-        const {first_name,username} = msg.from
-        let {text} = msg
+        if(text === '/contacts'){
+            bot.deleteMessage(chatId,message_id)
+            return onUpgrade(chatId)
+        }
 
-        if(formatCheck(text,statRegularExp) !== null){
-            const form = new FormData()
-            form.append('command_type', 'stat')
-            form.append('chat_id', chatId)
-            form.append('user_text', text)
-            form.append('username', username)
-            form.append('first_name', first_name)
+        if(text === '/manager'){
+            bot.deleteMessage(chatId,message_id)
+            return onMeet(chatId)
+        }
+    })
 
-            await POST_FETCH_REQUEST(form)
-            return  bot.sendMessage(chatId, 'Отчет отправлен :)')
-        } else{
-            return bot.sendMessage(chatId, `Отчет не отправлен. 
-Убедитесь,что придерживались заданного стандарта`)
+    await bot.on('callback_query', async callback_query => {
+        const action = callback_query.data
+
+        if(action === '/price') {
+            await bot.deleteMessage(chatId,mes.message_id)
+            return onBugs(chatId)
+        }
+        if(action === '/contacts') {
+            await bot.deleteMessage(chatId,mes.message_id)
+            return onUpgrade(chatId)
+        }
+        if(action === '/manager'){
+            await bot.deleteMessage(chatId,mes.message_id)
+            return onMeet(chatId)
         }
     })
 }
 
+const onBugs = async (chatId) => {
+    const product_type_keyboard = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [
+                    {text: 'Смартфон', callback_data: 'smartphone'}, 
+                    {text: 'Телевизор', callback_data: 'tv'}, 
+                ],
+                [
+                    {text: 'Ноутбук', callback_data: 'laptop'},
+                    {text: 'Проектор', callback_data: 'projector'},
+                    {text: 'Камера', callback_data: 'camera'}, 
+                ],
+                [
+                    {text: 'Квадрокоптер', callback_data: 'quadrocopter'}, 
+                    {text: 'Скутер', callback_data: 'scooter'}, 
+                ],
+            ]
+        })
+    }
+
+    const back_to_menu_keyboard = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [
+                    {text: 'Получить консультацию', callback_data: '/meet'}, 
+                ],
+                [
+                    {text: 'Вернуться в начало', callback_data: '/start'},
+                ]
+            ]
+        }),
+        parse_mode: 'Markdown'
+    } 
+
+    const tv_price_text = `
+    *Ремонт телевизора*
+- Замена экрана 1320 руб. 
+- Замена разъёма 950 руб. 
+- Замена блока питания 850 руб. 
+[Смотреть весь прайс](https://techsupport.com.ru/remont-televizorov/#telegram)
+    `
+    const laptop_price_text = `
+    *Ремонт ноутбука*
+- Замена дисплея 1060 руб. 
+- Ремонт клавиатуры 650 руб. 
+- Замена аккумулятора 450 руб.
+[Смотреть весь прайс](https://techsupport.com.ru/remont-noutbukov/#telegram)
+        `
+    const smartphone_price_text = `
+    *Ремонт смартфона*
+- Замена стекла 1650 руб.
+- Замена экрана 1400 руб. 
+- Замена аккумулятора 600 руб.
+[Смотреть весь прайс](https://techsupport.com.ru/remont-smartfonov/#telegram)
+    `
+    const projector_price_text =  `
+    *Ремонт прожектора*
+- ремонт в данном виде техники индивидуален и может быть рассчитан по запросу. 
+Опишите проблему и инженер сориентирует по стоимости и срокам ремонта.
+- стандартный ремонт укладывается в 900 рублей.
+        `
+    const camera_price_text =  `
+    *Ремонт камеры*
+- ремонт в данном виде техники индивидуален и может быть рассчитан по запросу. 
+Опишите проблему и инженер сориентирует по стоимости и срокам ремонта.
+- стандартный ремонт укладывается в 900 рублей.
+        `
+    const quadrocopter_price_text =  `
+    *Ремонт квадрокоптера*
+- Диагностика детальная от 450 руб.
+    
+- Замена камеры от 500 руб. 
+    
+- Замена аккумулятора от 500 руб.
+        `
+    const scooter_price_text =  `
+    *Ремонт самоката*
+- Замена аккумулятора от 500 руб. 
+    
+- Замена контроллера от 700 руб. 
+    
+- Замена светодиода / индикатора от 500 руб.
+        `
+
+    await bot.sendMessage(chatId, `Выберите тип устройства`, product_type_keyboard)
+
+    return bot.once('callback_query', async callback_query => {
+        const action = callback_query.data
+        const {message_id} = callback_query.message
+        const {username,first_name} = callback_query.from
+
+        if(action === 'laptop'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/3-note.jpg',Object.assign(back_to_menu_keyboard,{caption:laptop_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+                
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            
+            })
+        }
+        if(action === 'smartphone'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/2-smart.jpg',Object.assign(back_to_menu_keyboard,{caption:smartphone_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+                
+               
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            })
+        }
+        if(action === 'tv'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/1-tv.jpg',Object.assign(back_to_menu_keyboard,{caption:tv_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            
+            })
+        }
+        if(action === 'projector'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'./img/pro.jpg',Object.assign(back_to_menu_keyboard,{caption:projector_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            
+            })
+        }
+        if(action === 'camera'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'./img/camera.jpg',Object.assign(back_to_menu_keyboard,{caption:camera_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            
+            })
+        }
+        if(action === 'quadrocopter'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'./img/quadro.jpg',Object.assign(back_to_menu_keyboard,{caption:quadrocopter_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            
+            })
+        }
+        if(action === 'scooter'){
+            await bot.deleteMessage(chatId,message_id)
+            await bot.sendPhoto(chatId,'./img/scooter.jpg',Object.assign(back_to_menu_keyboard,{caption:scooter_price_text}))
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const {message_id} = callback_query.message
+
+                const form = new FormData()
+                form.append('command_type', 'price')
+                form.append('chat_id', chatId)
+                form.append('user_text', action)
+                form.append('username', username)
+                form.append('first_name', first_name)
+        
+                await POST_FETCH_REQUEST(form)
+
+                if(action === '/start'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onBackToStart(chatId,first_name,username)
+                }
+                if(action === '/meet'){
+                    bot.removeAllListeners()
+                    bot.deleteMessage(chatId,message_id)
+                    return onMeet(chatId)
+                }
+            
+            })
+        }
+    }) 
+}
+
+const onUpgrade = async (chatId) => {
+    const back_to_menu_keyboard = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [
+                    {text: 'Получить консультацию', callback_data: '/meet'},
+                ],
+                [
+                    {text: 'Вернуться в начало', callback_data: '/start'},
+                ]
+            ]
+        }),
+        parse_mode: 'Markdown'
+    } 
+
+    const text = `
+*Контакты сервисного центра TECHSUPPORT*
+г. Москва, ул. Фадеева, 7
+ст. м. Белорусская / Маяковская / Новослободская
+
+Часы работы сервиса:
+Ежедневно с 10:00 до 20:00
+
+Позвоните нам прямо сейчас:
++7 (499) 229-85-77
+                `
+    await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/0-contacts.jpg',Object.assign(back_to_menu_keyboard,{caption:text}))
+    return bot.once('callback_query', async callback_query => {
+        const action = callback_query.data
+        const {username, first_name} = callback_query.from
+        const {message_id} = callback_query.message
+
+        const form = new FormData()
+        form.append('command_type', 'price')
+        form.append('chat_id', chatId)
+        form.append('user_text', action)
+        form.append('username', username)
+        form.append('first_name', first_name)
+
+        await POST_FETCH_REQUEST(form)
+
+        if(action === '/start'){
+            bot.removeAllListeners()
+            bot.deleteMessage(chatId,message_id)
+            return onBackToStart(chatId,first_name,username)
+        }
+        if(action === '/meet'){
+            bot.removeAllListeners()
+            bot.deleteMessage(chatId,message_id)
+            return onMeet(chatId)
+        }
+    
+    })
+
+}
+
 const onMeet = async (chatId) => {
     // const {last_meet, most_frequently_meet} = GET_FETCH_REQUEST()
-    const meetMessage = `Чтобы назначить встречу следуйте инструкции.
-    
-Для начала выберите,с кем вы хотите назначить встречу?
-`
+    const meetMessage = `Выберите устройство`
 
-    const user_meet_options = {
+    const product_type_keyboard = {
         reply_markup: JSON.stringify({
             inline_keyboard: [
                 [
-                    {text: 'Сережа', callback_data: '@olimp360'},
-                    {text: 'Женя', callback_data: '@evjacksh'}, 
-                    {text: 'Рома', callback_data: '@Memoriz1337'}, 
-                    {text: 'Коля', callback_data: '@nikemat'}, 
-                    {text: 'Тимур', callback_data: '@Ttimbaland'}, 
+                    {text: 'Смартфон', callback_data: 'smartphone'}, 
+                    {text: 'Телевизор', callback_data: 'tv'}, 
                 ],
-
+                [
+                    {text: 'Ноутбук', callback_data: 'laptop'},
+                    {text: 'Проектор', callback_data: 'projector'},
+                    {text: 'Камера', callback_data: 'camera'}, 
+                ],
+                [
+                    {text: 'Квадрокоптер', callback_data: 'quadrocopter'}, 
+                    {text: 'Скутер', callback_data: 'scooter'}, 
+                ],
             ]
         })
     }
 
-    const meet_date_options = {
+    const meet_type_keyboard = {
         reply_markup: JSON.stringify({
             inline_keyboard: [
                 [
-                    {text: '01', callback_data: '01'},
-                    {text: '02', callback_data: '02'}, 
-                    {text: '03', callback_data: '03'}, 
-                    {text: '04', callback_data: '04'}, 
-                    {text: '05', callback_data: '05'}, 
-                    {text: '06', callback_data: '06'}, 
-                    {text: '07', callback_data: '07'}, 
+                    {text: 'По звоноку', callback_data: 'call'}, 
                 ],
                 [
-                    {text: '08', callback_data: '08'},
-                    {text: '09', callback_data: '09'}, 
-                    {text: '10', callback_data: '10'}, 
-                    {text: '11', callback_data: '11'}, 
-                    {text: '12', callback_data: '12'}, 
-                    {text: '13', callback_data: '13'}, 
-                    {text: '14', callback_data: '14'}, 
-                ],
-                [
-                    {text: '15', callback_data: '16'},
-                    {text: '17', callback_data: '17'}, 
-                    {text: '18', callback_data: '18'}, 
-                    {text: '19', callback_data: '19'}, 
-                    {text: '20', callback_data: '20'}, 
-                    {text: '21', callback_data: '21'}, 
-                    {text: '22', callback_data: '22'}, 
-                ],
-                [
-                    {text: '23', callback_data: '23'},
-                    {text: '24', callback_data: '24'}, 
-                    {text: '25', callback_data: '25'}, 
-                    {text: '26', callback_data: '26'}, 
-                    {text: '27', callback_data: '27'}, 
-                    {text: '28', callback_data: '28'}, 
-                    {text: '29', callback_data: '29'}, 
-                ],
-                [
-                    {text: '30', callback_data: '30'},
-                    {text: '31', callback_data: '30'}, 
-                ],
-
-            ]
-        })
-    }
-
-    const meet_time_options = {
-        reply_markup: JSON.stringify({
-            inline_keyboard: [
-                [
-                    {text: '09:00', callback_data: '09:00'},
-                    {text: '10:00', callback_data: '10:00'}, 
-                    {text: '11:00', callback_data: '11:00'}, 
-                    {text: '12:00', callback_data: '12:00'}, 
-                    {text: '13:00', callback_data: '13:00'}, 
-                ],
-                [
-                    {text: '14:00', callback_data: '14:00'}, 
-                    {text: '15:00', callback_data: '15:00'}, 
-                    {text: '16:00', callback_data: '16:00'},
-                    {text: '17:00', callback_data: '17:00'}, 
-                    {text: '18:00', callback_data: '18:00'}, 
-                ],
-                [
-                    {text: '19:00', callback_data: '19:00'}, 
+                    {text: 'В сообщении', callback_data: 'msg'},
                 ]
             ]
         })
     }
 
-    await bot.sendMessage(chatId, meetMessage, user_meet_options)
+    const back_to_menu_keyboard = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [
+                    {text: 'Вернуться в начало', callback_data: '/start'},
+                ]
+            ]
+        }),
+        parse_mode: 'Markdown'
+    } 
+
+
+
+    await bot.sendMessage(chatId, meetMessage, product_type_keyboard)
 
     bot.once('callback_query', async callback_query => {
-        const action = callback_query.data
+        const device_type = callback_query.data
         const {message_id} = callback_query.message
         const {username,first_name} = callback_query.from
-        let meet_username = action
-        await bot.editMessageText('Теперь выберите дату', Object.assign(meet_date_options,{message_id,chat_id:chatId}))
-
-        bot.once('callback_query',async callback_query => {
-            const action = callback_query.data
-            let meet_date = action
-            await bot.editMessageText('Теперь выберите время', Object.assign(meet_time_options,{message_id,chat_id:chatId}))
-
-            return bot.once('callback_query',async callback_query => {
-                const action = callback_query.data
-                let meet_time = action
-
-                if(meet_username !== null & meet_date !== null & meet_time !== null ){
-                    const now_date = new Date()
-                    const meetDate = new Date(`${meet_date}.${now_date.getMonth() + 1}.${now_date.getFullYear()} ${meet_time}`).getTime() / 1000
-                    const form = new FormData()
-                    form.append('command_type', 'meet')
-                    form.append('chat_id', chatId)
-                    form.append('username', username)
-                    form.append('first_name', first_name)
-                    form.append('meet_date', meetDate)
-                    form.append('meet_username', meet_username)
         
+        await bot.editMessageText('Опишите вашу проблему в одном сообщении',{message_id,chat_id:chatId})
+        return bot.once('message', async (msg) => {
+            const ms_id = msg.message_id
+            const user_text = msg.text
+
+            await bot.deleteMessage(chatId, ms_id)
+            await bot.editMessageText(`Спасибо за обращение. 
+Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
+
+            return bot.once('callback_query', async callback_query => {
+                const action = callback_query.data
+                const form = new FormData()
+                form.append('chat_id', chatId)
+                form.append('user_text', user_text)
+                form.append('username', username)
+                form.append('first_name', first_name)
+
+                if(action === 'call'){
+                    await bot.editMessageText('На какой номер перезвонить нашему сервисному инженеру для обсуждения неисправности вашего устройства и вариантов ремонта?',{message_id,chat_id:chatId})
+                    return bot.once('message', async msg => {
+                        const ms_id = msg.message_id
+                        const user_phone = msg.text
+                        await bot.editMessageText(`
+Спасибо! 
+Наш сервисный инженер оценит вашу неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+                        await bot.deleteMessage(chatId,ms_id)
+                        form.append('command_type', `price ${action} ${device_type} ${user_phone}`)
+                        await POST_FETCH_REQUEST(form)
+                        return bot.once('callback_query', async callback_query => {
+                            const action = callback_query.data 
+                            if(action === '/start'){
+                                try {
+                                    await bot.deleteMessage(chatId,message_id)
+                                } catch (error) {
+                                    console.log(error);
+                                }
+                                await bot.removeAllListeners()
+                                return onBackToStart(chatId,first_name,username)
+                            }
+                        })
+                    })
+                }
+                if(action === 'msg'){
+                    form.append('command_type', `price ${action} ${device_type}`)
                     await POST_FETCH_REQUEST(form)
-                    return bot.editMessageText(`Встреча с ${meet_username} назначена ${meet_date} числа в ${meet_time} :)`,{message_id,chat_id:chatId})
-                } else{
-                    return bot.editMessageText('Встреча не назначена. Убедитесь,что сделали все правильно',{message_id,chat_id:chatId})
+                    await bot.editMessageText(`
+Спасибо! 
+Наш сервисный инженер оценит описанную вами неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+                    return bot.once('callback_query', async callback_query => {
+                        const action = callback_query.data 
+                        if(action === '/start'){
+                            try {
+                                await bot.deleteMessage(chatId,message_id)
+                            } catch (error) {
+                                console.log(error);
+                            }
+                            await bot.removeAllListeners()
+                            return onBackToStart(chatId,first_name,username)
+                        }
+                    })
                 }
             })
         })
@@ -287,70 +663,34 @@ const start = () => {
 
     bot.setMyCommands([
         {command: '/start', description: 'Запустить бота'},
-        {command: '/bug', description: 'Сообщить об обнаруженной недоработке'},
-        {command: '/upg', description: 'Предложить идею по дополнению функционала'},
-        {command: '/stat', description: 'Написать отчет'},
-        {command: '/meet', description: 'Назначить встречу'},
+        {command: '/price', description: 'Узнать стоимость'},
+        {command: '/contacts', description: 'Посмотреть контакты'},
+        {command: '/manager', description: 'Получить консультацию'},
     ])
-
-    const startOptions = {
-        reply_markup: JSON.stringify({
-            inline_keyboard: [
-                [{text: 'YUIRWQ', callback_data: '/bug'}],
-                [{text: 'JASDJAS', callback_data: '/upg'}],
-                [{text: 'LKSDJA', callback_data: '/meet'}],
-            ]
-        })
-    }
 
     bot.on('message', async msg => {
         const chatId = msg.chat.id
-        const {username} = msg.chat
+        const {username,first_name} = msg.chat
         const {text,message_id} = msg
 
 
         console.log(msg)
         if(text === '/start'){
-
-            // bot.sendMessage(chatId, 'Если вы покажите свой номер телефона боту,мы сможем подсказать вам статус вашего заказа', {
-            //     reply_markup: {
-            //         one_time_keyboard: true,
-            //         keyboard: [[{text: 'Показать боту свой номер', request_contact: true, one_time_keyboard: true}]]
-            //     }
-            // })
-
-            const startMessage = `Привествие N2 `
-            const form = new FormData()
-            form.append('command_type', 'start')
-            form.append('chat_id', chatId)
-            form.append('username', username)
-    
-            await POST_FETCH_REQUEST(form)
-            await bot.sendMessage(chatId, startMessage ,startOptions)
-
-            return bot.on('callback_query', async callback_query => {
-                const action = callback_query.data
-
-                if(action === '/bug') return onBugs(chatId)
-                if(action === '/upg') return onUpgrade(chatId)
-                if(action === '/stat') return onStat(chatId)
-                if(action === '/meet') return onMeet(chatId)
-            })
+            return onStart(chatId,first_name,username,message_id)
         }
 
-        if(text === '/bug'){
+        if(text === '/price'){
+            bot.deleteMessage(chatId,message_id)
             return onBugs(chatId)
         }
 
-        if(text === '/upg'){
+        if(text === '/contacts'){
+            bot.deleteMessage(chatId,message_id)
             return onUpgrade(chatId)
         }
 
-        if(text === '/stat'){
-            return onStat(chatId)
-        }
-
-        if(text === '/meet'){
+        if(text === '/manager'){
+            bot.deleteMessage(chatId,message_id)
             return onMeet(chatId)
         }
     })
