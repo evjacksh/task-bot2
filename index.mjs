@@ -63,7 +63,7 @@ const onStart = async (chatId,first_name,username,message_id) => {
     const startOptions = {
         reply_markup: JSON.stringify({
             inline_keyboard: [
-                [{text: 'Узнать стоимость', callback_data: '/price'}],
+                [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
             ]
@@ -112,7 +112,7 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
     const startOptions = {
         reply_markup: JSON.stringify({
             inline_keyboard: [
-                [{text: 'Узнать стоимость', callback_data: '/price'}],
+                [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
             ]
@@ -196,7 +196,7 @@ const onBugs = async (chatId) => {
                 ],
                 [
                     {text: 'Квадрокоптер', callback_data: 'quadrocopter'}, 
-                    {text: 'Скутер', callback_data: 'scooter'}, 
+                    {text: 'Самокат', callback_data: 'scooter'}, 
                 ],
             ]
         })
@@ -639,7 +639,7 @@ const onMeet = async (chatId) => {
                     await POST_FETCH_REQUEST(form)
                     await bot.editMessageText(`
 Спасибо! 
-Наш сервисный инженер оценит описанную вами неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+Наш сервисный инженер оценит вашу неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
                     return bot.once('callback_query', async callback_query => {
                         const action = callback_query.data 
                         if(action === '/start'){
