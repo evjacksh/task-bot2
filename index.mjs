@@ -45,16 +45,6 @@ const POST_FETCH_REQUEST = async (form) => {
         .catch(err => console.log(err))
 }
 
-// const GET_FETCH_REQUEST = async (chat_id) => {
-//     const URL = `https://t.multibrand.msk.ru/tg_bot.php?stat`
-
-//     let data
-//     axios.get(URL)
-//         .then(res => res.json())
-//         .then(json => console.log(json))
-//         .catch(err => console.log(err))
-//     return data
-// }
 
 
 
@@ -274,6 +264,7 @@ const onBugs = async (chatId) => {
         const {username,first_name} = callback_query.from
 
         if(action === 'laptop'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/3-note.jpg',Object.assign(back_to_menu_keyboard,{caption:laptop_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -281,7 +272,7 @@ const onBugs = async (chatId) => {
                 const {message_id} = callback_query.message
                 
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -303,6 +294,7 @@ const onBugs = async (chatId) => {
             })
         }
         if(action === 'smartphone'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/2-smart.jpg',Object.assign(back_to_menu_keyboard,{caption:smartphone_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -311,7 +303,7 @@ const onBugs = async (chatId) => {
                 
                
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -332,6 +324,7 @@ const onBugs = async (chatId) => {
             })
         }
         if(action === 'tv'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/1-tv.jpg',Object.assign(back_to_menu_keyboard,{caption:tv_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -339,7 +332,7 @@ const onBugs = async (chatId) => {
                 const {message_id} = callback_query.message
 
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -361,6 +354,7 @@ const onBugs = async (chatId) => {
             })
         }
         if(action === 'projector'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'./img/pro.jpg',Object.assign(back_to_menu_keyboard,{caption:projector_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -368,7 +362,7 @@ const onBugs = async (chatId) => {
                 const {message_id} = callback_query.message
 
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -390,6 +384,7 @@ const onBugs = async (chatId) => {
             })
         }
         if(action === 'camera'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'./img/camera.jpg',Object.assign(back_to_menu_keyboard,{caption:camera_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -397,7 +392,7 @@ const onBugs = async (chatId) => {
                 const {message_id} = callback_query.message
 
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -419,6 +414,7 @@ const onBugs = async (chatId) => {
             })
         }
         if(action === 'quadrocopter'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'./img/quadro.jpg',Object.assign(back_to_menu_keyboard,{caption:quadrocopter_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -426,7 +422,7 @@ const onBugs = async (chatId) => {
                 const {message_id} = callback_query.message
 
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -448,6 +444,7 @@ const onBugs = async (chatId) => {
             })
         }
         if(action === 'scooter'){
+            const product_type = action
             await bot.deleteMessage(chatId,message_id)
             await bot.sendPhoto(chatId,'./img/scooter.jpg',Object.assign(back_to_menu_keyboard,{caption:scooter_price_text}))
             return bot.once('callback_query', async callback_query => {
@@ -455,7 +452,7 @@ const onBugs = async (chatId) => {
                 const {message_id} = callback_query.message
 
                 const form = new FormData()
-                form.append('command_type', 'price')
+                form.append('command_type', `price ${product_type}`)
                 form.append('chat_id', chatId)
                 form.append('user_text', action)
                 form.append('username', username)
@@ -512,7 +509,7 @@ const onUpgrade = async (chatId) => {
         const {message_id} = callback_query.message
 
         const form = new FormData()
-        form.append('command_type', 'price')
+        form.append('command_type', 'contacts')
         form.append('chat_id', chatId)
         form.append('user_text', action)
         form.append('username', username)
@@ -536,7 +533,6 @@ const onUpgrade = async (chatId) => {
 }
 
 const onMeet = async (chatId) => {
-    // const {last_meet, most_frequently_meet} = GET_FETCH_REQUEST()
     const meetMessage = `Выберите устройство`
 
     const product_type_keyboard = {
