@@ -612,7 +612,7 @@ const onMeet = async (chatId) => {
                         const user_phone = msg.text
                         await bot.editMessageText(`
 Спасибо! 
-Наш сервисный инженер оценит вашу неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
                         await bot.deleteMessage(chatId,ms_id)
                         form.append('command_type', `price ${action} ${device_type} ${user_phone}`)
                         await POST_FETCH_REQUEST(form)
@@ -635,7 +635,7 @@ const onMeet = async (chatId) => {
                     await POST_FETCH_REQUEST(form)
                     await bot.editMessageText(`
 Спасибо! 
-Наш сервисный инженер оценит вашу неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
                     return bot.once('callback_query', async callback_query => {
                         const action = callback_query.data 
                         if(action === '/start'){
