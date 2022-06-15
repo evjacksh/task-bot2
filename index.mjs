@@ -54,9 +54,9 @@ const onStart = async (chatId,first_name,username,message_id) => {
         reply_markup: JSON.stringify({
             inline_keyboard: [
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
-                [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
                 [{text: 'Отправить фото на оценку', callback_data: '/photo'}],
+                [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
             ]
         })
     }
@@ -108,9 +108,9 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
         reply_markup: JSON.stringify({
             inline_keyboard: [
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
-                [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
                 [{text: 'Отправить фото на оценку', callback_data: '/photo'}],
+                [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
             ]
         })
     }
@@ -785,9 +785,9 @@ const start = () => {
     bot.setMyCommands([
         {command: '/start', description: 'Запустить бота'},
         {command: '/price', description: 'Узнать стоимость'},
-        {command: '/contacts', description: 'Посмотреть контакты'},
         {command: '/manager', description: 'Получить консультацию'},
         {command: '/photo', description: 'Отправить фото на оценку'},
+        {command: '/contacts', description: 'Посмотреть контакты'},
     ])
 
     bot.on('message', async msg => {
