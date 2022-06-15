@@ -514,7 +514,7 @@ const onUpgrade = async (chatId) => {
 Ежедневно с 10:00 до 20:00
 
 Позвоните нам прямо сейчас:
-+7 (499) 229-85-77
+[+7 (499) 229-85-77](tel:74992298577)
                 `
     await bot.sendPhoto(chatId,'https://techsupport.com.ru/img/0-contacts.jpg',Object.assign(back_to_menu_keyboard,{caption:text}))
     return bot.once('callback_query', async callback_query => {
