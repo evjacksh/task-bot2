@@ -56,6 +56,7 @@ const onStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
+                [{text: 'Отправить фото поломки', callback_data: '/senddefectphoto'}],
             ]
         })
     }
@@ -93,6 +94,10 @@ const onStart = async (chatId,first_name,username,message_id) => {
             await bot.deleteMessage(chatId,mes.message_id)
             return onMeet(chatId)
         }
+        if(action === '/senddefectphoto'){
+            bot.deleteMessage(chatId,mes.message_id)
+            return onSendImage(chatId)
+        }
     })
 
 }
@@ -105,6 +110,7 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
+                [{text: 'Отправить фото поломки', callback_data: '/senddefectphoto'}],
             ]
         })
     }
@@ -151,6 +157,10 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
             bot.deleteMessage(chatId,message_id)
             return onMeet(chatId)
         }
+        if(text === '/senddefectphoto'){
+            bot.deleteMessage(chatId,message_id)
+            return onSendImage(chatId)
+        }
     })
 
     await bot.on('callback_query', async callback_query => {
@@ -167,6 +177,10 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
         if(action === '/manager'){
             await bot.deleteMessage(chatId,mes.message_id)
             return onMeet(chatId)
+        }
+        if(action === '/senddefectphoto'){
+            bot.deleteMessage(chatId,mes.message_id)
+            return onSendImage(chatId)
         }
     })
 }
@@ -559,7 +573,7 @@ const onMeet = async (chatId) => {
         reply_markup: JSON.stringify({
             inline_keyboard: [
                 [
-                    {text: 'По звоноку', callback_data: 'call'}, 
+                    {text: 'По звонку', callback_data: 'call'}, 
                 ],
                 [
                     {text: 'В сообщении', callback_data: 'msg'},
@@ -579,8 +593,6 @@ const onMeet = async (chatId) => {
         parse_mode: 'Markdown'
     } 
 
-
-
     await bot.sendMessage(chatId, meetMessage, product_type_keyboard)
 
     bot.once('callback_query', async callback_query => {
@@ -592,7 +604,6 @@ const onMeet = async (chatId) => {
         return bot.once('message', async (msg) => {
             const ms_id = msg.message_id
             const user_text = msg.text
-
             await bot.deleteMessage(chatId, ms_id)
             await bot.editMessageText(`Спасибо за обращение. 
 Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
@@ -655,6 +666,70 @@ const onMeet = async (chatId) => {
 
 }
 
+const onSendImage = async (chatId) => {
+    const sendImageText = 'Отправьте фото поломки'
+    const back_to_menu_keyboard = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [
+                    {text: 'Вернуться в начало', callback_data: '/start'},
+                ]
+            ]
+        }),
+        parse_mode: 'Markdown'
+    }
+
+    const botMsg = await bot.sendMessage(chatId, sendImageText)
+    return bot.once('message', async msg => {
+        const {first_name,username} = msg.from
+        let text = msg.caption ? msg.caption : msg.text
+        let photo = msg.photo ? msg.photo[0].file_id : null
+        let ms_id = msg.message_id
+        let message_id = botMsg.message_id
+        let textWithImg
+
+        if(photo !== null){
+            textWithImg = `
+            ${text ? text : ''}
+
+            https://api.telegram.org/bot${token}/getFile?file_id=${photo}
+        `
+        }
+
+        const form = new FormData()
+        form.append('command_type', 'send_defect_photo')
+        form.append('chat_id', chatId)
+
+        if(photo !== null){
+            form.append('user_text', textWithImg)
+        } else{
+            form.append('user_text', text)
+        }
+
+        form.append('username', username)
+        form.append('first_name', first_name)
+
+        await POST_FETCH_REQUEST(form)
+        await bot.deleteMessage(chatId, ms_id)
+        console.log(message_id);
+        await bot.editMessageText(`
+        Спасибо! 
+Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+        return bot.once('callback_query', async callback_query => {
+            const action = callback_query.data 
+            if(action === '/start'){
+                try {
+                    await bot.deleteMessage(chatId,message_id)
+                } catch (error) {
+                    console.log(error);
+                }
+                await bot.removeAllListeners()
+                return onBackToStart(chatId,first_name,username)
+            }
+        })
+    })
+}
+
 const start = () => {
 
     bot.setMyCommands([
@@ -662,6 +737,7 @@ const start = () => {
         {command: '/price', description: 'Узнать стоимость'},
         {command: '/contacts', description: 'Посмотреть контакты'},
         {command: '/manager', description: 'Получить консультацию'},
+        {command: '/senddefectphoto', description: 'Отправить фото поломки'},
     ])
 
     bot.on('message', async msg => {
@@ -688,6 +764,10 @@ const start = () => {
         if(text === '/manager'){
             bot.deleteMessage(chatId,message_id)
             return onMeet(chatId)
+        }
+        if(text === '/senddefectphoto'){
+            bot.deleteMessage(chatId,message_id)
+            return onSendImage(chatId)
         }
     })
   
