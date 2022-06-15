@@ -56,7 +56,7 @@ const onStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
-                [{text: 'Отправить фото поломки', callback_data: '/senddefectphoto'}],
+                [{text: 'Отправить фото на оценку', callback_data: '/senddefectphoto'}],
             ]
         })
     }
@@ -110,7 +110,7 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
-                [{text: 'Отправить фото поломки', callback_data: '/senddefectphoto'}],
+                [{text: 'Отправить фото на оценку', callback_data: '/senddefectphoto'}],
             ]
         })
     }
@@ -667,7 +667,7 @@ const onMeet = async (chatId) => {
 }
 
 const onSendImage = async (chatId) => {
-    const sendImageText = 'Отправьте фото поломки'
+    const sendImageText = 'Выберите 1 фото, которое максимально отражает поломку вашего устройства.'
     const back_to_menu_keyboard = {
         reply_markup: JSON.stringify({
             inline_keyboard: [
@@ -723,8 +723,7 @@ const onSendImage = async (chatId) => {
         form.append('first_name', first_name)
 
         await bot.deleteMessage(chatId, ms_id)
-        await bot.editMessageText(`Спасибо за обращение. 
-Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
+        await bot.editMessageText(`Фото направлено нашему сервисному инженеру, как с вами связаться?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
         return bot.once('callback_query', async callback_query => {
             const action = callback_query.data 
 
@@ -787,7 +786,7 @@ const start = () => {
         {command: '/price', description: 'Узнать стоимость'},
         {command: '/contacts', description: 'Посмотреть контакты'},
         {command: '/manager', description: 'Получить консультацию'},
-        {command: '/senddefectphoto', description: 'Отправить фото поломки'},
+        {command: '/senddefectphoto', description: 'Отправить фото на оценку'},
     ])
 
     bot.on('message', async msg => {
