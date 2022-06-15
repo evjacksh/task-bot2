@@ -679,6 +679,19 @@ const onSendImage = async (chatId) => {
         parse_mode: 'Markdown'
     }
 
+    const meet_type_keyboard = {
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [
+                    {text: 'По звонку', callback_data: 'call'}, 
+                ],
+                [
+                    {text: 'В сообщении', callback_data: 'msg'},
+                ]
+            ]
+        })
+    }
+
     const botMsg = await bot.sendMessage(chatId, sendImageText)
     return bot.once('message', async msg => {
         const {first_name,username} = msg.from
@@ -697,7 +710,7 @@ const onSendImage = async (chatId) => {
         }
 
         const form = new FormData()
-        form.append('command_type', 'send_defect_photo')
+
         form.append('chat_id', chatId)
 
         if(photo !== null){
@@ -709,23 +722,60 @@ const onSendImage = async (chatId) => {
         form.append('username', username)
         form.append('first_name', first_name)
 
-        await POST_FETCH_REQUEST(form)
         await bot.deleteMessage(chatId, ms_id)
-        console.log(message_id);
-        await bot.editMessageText(`
-        Спасибо! 
-Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+        await bot.editMessageText(`Спасибо за обращение. 
+Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
         return bot.once('callback_query', async callback_query => {
             const action = callback_query.data 
-            if(action === '/start'){
-                try {
-                    await bot.deleteMessage(chatId,message_id)
-                } catch (error) {
-                    console.log(error);
-                }
-                await bot.removeAllListeners()
-                return onBackToStart(chatId,first_name,username)
+
+
+            if(action === 'call'){
+                await bot.editMessageText('На какой номер перезвонить нашему сервисному инженеру для обсуждения неисправности вашего устройства и вариантов ремонта?',{message_id,chat_id:chatId})
+                return bot.once('message', async msg => {
+                    const ms_id = msg.message_id
+                    const user_phone = msg.text
+                    form.append('command_type', `send_defect_photo ${action} ${user_phone}`)
+                    await POST_FETCH_REQUEST(form)
+                    await bot.deleteMessage(chatId,ms_id)
+                    await bot.editMessageText(`
+Спасибо! 
+Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+                    return bot.once('callback_query', async callback_query => {
+                        const action = callback_query.data 
+                        if(action === '/start'){
+                            try {
+                                await bot.deleteMessage(chatId,message_id)
+                            } catch (error) {
+                                console.log(error);
+                            }
+                            await bot.removeAllListeners()
+                            return onBackToStart(chatId,first_name,username)
+                        }
+                    })
+                })
             }
+            if(action === 'msg'){
+                form.append('command_type', `send_defect_photo ${action}`)
+                await POST_FETCH_REQUEST(form)
+                await bot.editMessageText(`
+Спасибо! 
+Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+                return bot.once('callback_query', async callback_query => {
+                    const action = callback_query.data 
+                    if(action === '/start'){
+                        try {
+                            await bot.deleteMessage(chatId,message_id)
+                        } catch (error) {
+                            console.log(error);
+                        }
+                        await bot.removeAllListeners()
+                        return onBackToStart(chatId,first_name,username)
+                    }
+                })
+            }
+
+
+            
         })
     })
 }
