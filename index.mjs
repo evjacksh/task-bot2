@@ -56,7 +56,7 @@ const onStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
-                [{text: 'Отправить фото на оценку', callback_data: '/senddefectphoto'}],
+                [{text: 'Отправить фото на оценку', callback_data: '/photo'}],
             ]
         })
     }
@@ -94,7 +94,7 @@ const onStart = async (chatId,first_name,username,message_id) => {
             await bot.deleteMessage(chatId,mes.message_id)
             return onMeet(chatId)
         }
-        if(action === '/senddefectphoto'){
+        if(action === '/photo'){
             bot.deleteMessage(chatId,mes.message_id)
             return onSendImage(chatId)
         }
@@ -110,7 +110,7 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Узнать стоимость ремонта', callback_data: '/price'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
-                [{text: 'Отправить фото на оценку', callback_data: '/senddefectphoto'}],
+                [{text: 'Отправить фото на оценку', callback_data: '/photo'}],
             ]
         })
     }
@@ -157,7 +157,7 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
             bot.deleteMessage(chatId,message_id)
             return onMeet(chatId)
         }
-        if(text === '/senddefectphoto'){
+        if(text === '/photo'){
             bot.deleteMessage(chatId,message_id)
             return onSendImage(chatId)
         }
@@ -178,7 +178,7 @@ const onBackToStart = async (chatId,first_name,username,message_id) => {
             await bot.deleteMessage(chatId,mes.message_id)
             return onMeet(chatId)
         }
-        if(action === '/senddefectphoto'){
+        if(action === '/photo'){
             bot.deleteMessage(chatId,mes.message_id)
             return onSendImage(chatId)
         }
@@ -787,7 +787,7 @@ const start = () => {
         {command: '/price', description: 'Узнать стоимость'},
         {command: '/contacts', description: 'Посмотреть контакты'},
         {command: '/manager', description: 'Получить консультацию'},
-        {command: '/senddefectphoto', description: 'Отправить фото на оценку'},
+        {command: '/photo', description: 'Отправить фото на оценку'},
     ])
 
     bot.on('message', async msg => {
@@ -815,7 +815,7 @@ const start = () => {
             bot.deleteMessage(chatId,message_id)
             return onMeet(chatId)
         }
-        if(text === '/senddefectphoto'){
+        if(text === '/photo'){
             bot.deleteMessage(chatId,message_id)
             return onSendImage(chatId)
         }
