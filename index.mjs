@@ -723,7 +723,8 @@ const onSendImage = async (chatId) => {
         form.append('first_name', first_name)
 
         await bot.deleteMessage(chatId, ms_id)
-        await bot.editMessageText(`Фото направлено нашему сервисному инженеру, как с вами связаться?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
+        await bot.editMessageText(`Фото направлено нашему сервисному инженеру. 
+Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
         return bot.once('callback_query', async callback_query => {
             const action = callback_query.data 
 
