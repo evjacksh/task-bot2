@@ -665,7 +665,7 @@ const onMeet = async (chatId) => {
     })
 
 }
-
+// asdasda
 const onSendImage = async (chatId) => {
     const sendImageText = 'Выберите 1 фото, которое максимально отражает поломку вашего устройства.'
     const back_to_menu_keyboard = {
