@@ -709,7 +709,7 @@ const onSendImage = async (chatId) => {
                 return resString.replace(count,++count)
             }
             const data = await axiosGet()
-            textWithImg += `file_id=${photo}${' '}
+            textWithImg += `https://api.telegram.org/bot${token}/getFile?file_id=${photo}
             
 https://api.telegram.org/file/bot${token}/${data}`
 
