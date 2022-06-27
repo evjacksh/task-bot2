@@ -696,10 +696,11 @@ const onSendImage = async (chatId) => {
     return bot.once('message', async msg => {
         const {first_name,username} = msg.from
         let text = msg.caption ? msg.caption : msg.text
-        let photo = msg.photo ? msg.photo[0].file_id : null
+        let photo = msg.photo ? msg.photo[msg.photo.length - 1].file_id : null
         let ms_id = msg.message_id
         let message_id = botMsg.message_id
         let textWithImg = ''
+
 
         const asyncFucn = async () => {
             const axiosGet = async () => {
