@@ -730,7 +730,7 @@ https://api.telegram.org/file/bot${token}/${data}`
 
             await bot.deleteMessage(chatId, ms_id)
             await bot.editMessageText(`Фото направлено нашему сервисному инженеру. 
-    Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
+Как вам удобно получить консультацию?`,Object.assign(meet_type_keyboard,{message_id,chat_id:chatId}))
             return bot.once('callback_query', async callback_query => {
                 const action = callback_query.data 
 
@@ -745,7 +745,7 @@ https://api.telegram.org/file/bot${token}/${data}`
                         await bot.deleteMessage(chatId,ms_id)
                         await bot.editMessageText(`
     Спасибо! 
-    Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
+Наш сервисный инженер оценит неисправность и скоро свяжется с вами!`,Object.assign(back_to_menu_keyboard,{message_id,chat_id:chatId}))
                         return bot.once('callback_query', async callback_query => {
                             const action = callback_query.data 
                             if(action === '/start'){
