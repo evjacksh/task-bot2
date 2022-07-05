@@ -57,10 +57,11 @@ const onStart = async (chatId,first_name,username,message_id) => {
                 [{text: 'Получить консультацию', callback_data: '/manager'}],
                 [{text: 'Отправить фото на оценку', callback_data: '/photo'}],
                 [{text: 'Посмотреть контакты', callback_data: '/contacts'}],
+                [{text: 'Оставить отзыв', callback_data: '/feedback'}],
             ]
         })
     }
-
+    
     // bot.sendMessage(chatId, 'Если вы покажите свой номер телефона боту,мы сможем подсказать вам статус вашего заказа', {
     //     reply_markup: {
     //         one_time_keyboard: true,
@@ -98,6 +99,11 @@ const onStart = async (chatId,first_name,username,message_id) => {
             bot.deleteMessage(chatId,mes.message_id)
             return onSendImage(chatId)
         }
+        if(action === '/feedback'){
+            bot.deleteMessage(chatId,mes.message_id)
+            return onFeedback(chatId)
+        }
+        
     })
 
 }
@@ -785,7 +791,29 @@ https://api.telegram.org/file/bot${token}/${data}`
     })    
 }
 
+const onFeedback = async (chatId) => {
+    const startMsg = `Расскажите свою историю и как вам помогли в нашем сервисе. Чтобы это сделать отправьте сообщение в этот чат.`
+
+
+    await bot.sendMessage(chatId, startMsg)
+    return bot.once('message', async msg => {
+        const {first_name,username} = msg.from
+        const text = msg.text
+        
+
+        const form = new FormData()
+        form.append('command_type', 'contacts')
+        form.append('chat_id', chatId)
+        form.append('user_text', text)
+        form.append('username', username)
+        form.append('first_name', first_name)
+
+        await POST_FETCH_REQUEST(form)
+    })
+}
+
 const start = () => {
+    bot.removeAllListeners()
 
     bot.setMyCommands([
         {command: '/start', description: 'Запустить бота'},
@@ -793,6 +821,7 @@ const start = () => {
         {command: '/manager', description: 'Получить консультацию'},
         {command: '/photo', description: 'Отправить фото на оценку'},
         {command: '/contacts', description: 'Посмотреть контакты'},
+        {command: '/feedback', description: 'Оставить отзыв'},
     ])
 
     bot.on('message', async msg => {
@@ -823,6 +852,10 @@ const start = () => {
         if(text === '/photo'){
             bot.deleteMessage(chatId,message_id)
             return onSendImage(chatId)
+        }
+        if(text === '/feedback'){
+            bot.deleteMessage(chatId,message_id)
+            return onFeedback(chatId)
         }
     })
 }
